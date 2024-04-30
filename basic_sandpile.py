@@ -3,6 +3,7 @@ import os
 from multiprocessing import Process
 import matplotlib.pyplot as plt
 import time
+import pickle
 
 rand.seed()
 
@@ -25,8 +26,8 @@ def sandpile_step(sandpile: list[list[int]]):
     '''
     Updates sandpile according to rules.
     '''
-    k0 = rand.randint(0, len(sandpile))
-    k1 = rand.randint(0, len(sandpile[0]))
+    k0 = rand.randint(0, len(sandpile)-1)
+    k1 = rand.randint(0, len(sandpile[0])-1)
     sandpile[k0][k1] += 1
     for i in range(len(sandpile)):
         for j in range(len(sandpile)):
@@ -55,10 +56,20 @@ def sandpile_process(sandpile: list[list[int]], iterations:int = 1000):
     ~pretty~, maybe some colour presets would be nice also. Don't 
     get too bogged down in cosmetics though. 
     '''
-    step = 0 
+    snapshots = ceil((sandpile*sandpile[0]*iterations)/10**7)
+    step = 0
+    counter = 0 
     while step < iterations: 
         sandpile = sandpile_step(sandpile)
-        plt.imshow(sandpile)
+        counter+=1
+        # take pictures of the sandpile every f steps,
+        # where f is chosen so that the number of snapshots
+        # taken has storage size <= ~20mb
+        if counter == snapshots:
+            plt.imshow(sandpile)
+            plt.legend()
+            plt.show()
+            counter = 0
         step += 1
     return sandpile
 
@@ -78,5 +89,5 @@ def sandpile_process(sandpile: list[list[int]], iterations:int = 1000):
 #    '''
 #    def __init__(self, dimensions, palette):
 
-g = generate_sandpile((8,9))
-sandpile_process(g)
+g = generate_sandpile((3,3))
+sandpile_process(g, iterations=20)
