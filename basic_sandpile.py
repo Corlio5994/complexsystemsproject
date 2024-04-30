@@ -3,6 +3,9 @@ import os
 from multiprocessing import Process
 import matplotlib.pyplot as plt
 import time
+import pickle
+from datetime import datetime
+from matplotlib.backends.backend_pdf import PdfPages
 
 rand.seed()
 
@@ -42,7 +45,7 @@ def sandpile_step(sandpile: list[list[int]]):
                     sandpile[i][j-1] = sandpile[i][j-1] + 1
     return sandpile
 
-def sandpile_process(sandpile: list[list[int]], iterations:int = 1000):
+def sandpile_process(sandpile: list[list[int]], visual:bool = True, iterations:int = 1000):
     '''
     I don't think this will fit in a single function, but I want
     to display sandpile evolution on a grid that continuously updates. 
@@ -56,10 +59,15 @@ def sandpile_process(sandpile: list[list[int]], iterations:int = 1000):
     get too bogged down in cosmetics though. 
     '''
     step = 0 
+    snaps = []
     while step < iterations: 
         sandpile = sandpile_step(sandpile)
-        plt.imshow(sandpile)
+        if visual ==True:
+            snaps.append(pickle.dumps(plt.imshow(sandpile)))
         step += 1
+    if visual == True: 
+        time = datetime.now().strftime("%H:%M:%S")
+        pass
     return sandpile
 
 
@@ -79,4 +87,4 @@ def sandpile_process(sandpile: list[list[int]], iterations:int = 1000):
 #    def __init__(self, dimensions, palette):
 
 g = generate_sandpile((8,9))
-sandpile_process(g)
+sandpile_process(g, iterations = 10000)
