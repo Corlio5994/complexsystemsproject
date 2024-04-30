@@ -3,6 +3,7 @@ import os
 from multiprocessing import Process
 import matplotlib.pyplot as plt
 import time
+import math
 import pickle
 from datetime import datetime
 from matplotlib.backends.backend_pdf import PdfPages
@@ -58,9 +59,12 @@ def sandpile_process(sandpile: list[list[int]], visual:bool = True, iterations:i
     ~pretty~, maybe some colour presets would be nice also. Don't 
     get too bogged down in cosmetics though. 
     '''
-    snapshots = ceil((sandpile*sandpile[0]*iterations)/10**7)
+    snapshots = math.ceil((len(sandpile)*len(sandpile[0])*iterations)/10**7)
     step = 0
     counter = 0 
+    cmap = plt.cm.viridis
+    norm = plt.Normalize(vmin = 0, vmax = 4)
+    #TODO: Rename snaps
     snaps = []
     while step < iterations: 
         sandpile = sandpile_step(sandpile)
@@ -68,13 +72,21 @@ def sandpile_process(sandpile: list[list[int]], visual:bool = True, iterations:i
         # take pictures of the sandpile every f steps,
         # where f is chosen so that the number of snapshots
         # taken has storage size <= ~20mb
+        if counter == snapshots:
+            print(f'Up to step {step}.')
         if counter == snapshots and visual== True:
-            snaps.append(pickle.dumps(plt.imshow(sandpile)))
+            snaps.append(pickle.dumps(cmap(norm(sandpile))))
             counter = 0
         step += 1
     if visual == True: 
-        time = datetime.now().strftime("%H:%M:%S")
-        pass
+        print('Unpickling snapshots...')
+        time = datetime.now().strftime("%H-%M-%S")
+        fname = 'RecordedSimSnapshots_' + time
+        f = PdfPages(fname)
+        for i in range(len(snaps)): 
+            pic = pickle.loads(snaps[i])
+            plt.imsave(f, pic, format='pdf')
+        f.close()
     return sandpile
 
 
